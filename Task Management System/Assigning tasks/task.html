@@ -1,0 +1,120 @@
+<div class="step-text">
+<h5 id="description">Description</h5>
+<p>In this stage, you'll set up task management. Task creators should be able to assign their tasks to other users. Additionally, both task creators and assignees should have the option to update the task's status.</p>
+<p>Besides listing all tasks and filtering them by creator, a client should also be capable of filtering tasks by assignee.</p>
+<p>Let's delve into this functionality.</p>
+<p>When a user makes a task, it gets the status <code class="language-json">CREATED</code> and doesn't have an assignee. The creator can pick another user by their email and assign the task to them. Plus, the creator can remove the assignee from the task. Other users can still see the tasks made by others but they can't modify them.</p>
+<p>Moreover, the creator can alter the task's status. The possible statuses, besides <code class="language-json">CREATED</code>, are <code class="language-json">IN_PROGRESS</code> and <code class="language-json">COMPLETED</code>. If the task has an assignee, that assignee can also update the task status. No other user has the authorization to change the status of the task.</p>
+<p>This is the beginning of actual task management. Remember, previous functionalities should remain operational.</p>
+<h5 id="objectives">Objectives</h5>
+<ul>
+<li>
+<p>Refine the <code class="language-json">POST /api/tasks</code> endpoint. It should take the same request body as before but its response body should now include the assignee field with the value <code class="language-json">"none"</code> since the new task isn't assigned:</p>
+<pre><code class="language-json">{
+  "id": &lt;string&gt;,
+  "title": &lt;string&gt;,
+  "description": &lt;string&gt;,
+  "status": "CREATED",
+  "author": &lt;string&gt;,
+  "assignee": "none"
+}</code></pre>
+</li>
+<li>
+<p>Make the <code class="language-json">PUT /api/tasks/&lt;taskId&gt;/assign</code> endpoint. It should accept the following JSON request body:</p>
+</li>
+<li>
+<pre><code class="language-json">{ 
+  "assignee": &lt;email address|"none"&gt; 
+}</code></pre>
+<p>and respond with the status code <code class="language-json">200 OK</code> and a response body mirroring the updated task state:</p>
+<pre><code class="language-json">{
+  "id": &lt;string&gt;,
+  "title": &lt;string&gt;,
+  "description": &lt;string&gt;,
+  "status": &lt;string&gt;,
+  "author": &lt;string&gt;,
+  "assignee": &lt;assignee's email&gt;
+}</code></pre>
+<p>The <code class="language-json">assignee</code> field should contain either the valid email address of a registered user or <code class="language-json">"none"</code> if the author wants to remove the previous assignment. If the <code class="language-json">taskId</code> path variable doesn't reflect the ID of a task, the endpoint should respond with the status code <code class="language-json">404 NOT FOUND</code>. Likewise, if the assignee's email isn't associated with a registered user, the endpoint should reply with the status code <code class="language-json">404 NOT FOUND</code>. If the <code class="language-json">assignee</code> isn't a valid email address or <code class="language-json">"none"</code>, return the status code <code class="language-json">400 BAD REQUEST</code>. If the user who's trying to assign the task isn't its author, respond with the status code <code class="language-json">403 FORBIDDEN</code>.</p>
+</li>
+<li>
+<p>Create the <code class="language-json">PUT /api/tasks/&lt;taskId&gt;/status</code> endpoint that should accept the following JSON request body:</p>
+<pre><code class="language-json">{
+  "status": &lt;"CREATED"|"IN_PROGRESS"|"COMPLETED"&gt;
+}</code></pre>
+<p>and reply with the status code <code class="language-json">200 OK</code> and a response body that shows the updated task state:</p>
+<pre><code class="language-json">{
+  "id": &lt;string&gt;,
+  "title": &lt;string&gt;,
+  "description": &lt;string&gt;,
+  "status": &lt;new status&gt;,
+  "author": &lt;string&gt;,
+  "assignee": &lt;string&gt;
+}</code></pre>
+<p>The <code class="language-json">status</code> field should only have one of the permitted values, which are <code class="language-json">CREATED</code>, <code class="language-json">IN_PROGRESS</code>, or <code class="language-json">COMPLETED</code>. If it's not one of these, return the response code <code class="language-json">400 BAD REQUEST</code>. If the user trying to change the task status isn't the author or assignee, respond with the status code <code class="language-json">403 FORBIDDEN</code>. If the <code class="language-json">taskId</code> path variable doesn't refer to an existing task ID, the endpoint should respond with the status code <code class="language-json">404 NOT FOUND</code>.</p>
+</li>
+<li>
+<p>Alter the <code class="language-json">GET /api/tasks</code> endpoint. Now it should accept a new optional parameter, assignee, for filtering tasks. The assignee parameter holds a user's email address and should be treated case insensitive. A request can contain any, both or none of the parameters to filter tasks by author, assignee, or both, or just return a list of all tasks:</p>
+<pre><code class="language-json">[
+  {
+    "id": &lt;string&gt;,
+    "title": &lt;string&gt;,
+    "description": &lt;string&gt;,
+    "status": &lt;string&gt;,
+    "author": &lt;string&gt;,
+    "assignee": &lt;string&gt;
+  },
+  // other tasks
+]</code></pre>
+</li>
+</ul>
+<h5 id="examples">Examples</h5>
+<p><strong>Example 1.</strong> <em>PUT request to the /api/tasks/1/assign endpoint by the task's creator</em>: <em>Request body</em>:</p>
+<pre><code class="language-json">{
+  "assignee": "user2@mail.com"
+}</code></pre>
+<p><em>Response code</em>: <code class="language-json">200 OK</code></p>
+<p><em>Response body</em>:</p>
+<pre><code class="language-json">{
+  "id": "1",
+  "title": "new task",
+  "description": "a task for anyone",
+  "status": "CREATED",
+  "author": "user1@mail.com",
+  "assignee": "user2@mail.com"
+}</code></pre>
+<p><strong>Example 2.</strong> <em>PUT request to the /api/tasks/1/status endpoint by the task's assignee</em>:</p>
+<p><em>Request body</em>:</p>
+<pre><code class="language-json">{
+  "status": "COMPLETED"
+}</code></pre>
+<p><em>Response code</em>: <code class="language-json">200 OK</code></p>
+<p><em>Response body</em>:</p>
+<pre><code class="language-json">{
+  "id": "1",
+  "title": "new task",
+  "description": "a task for anyone",
+  "status": "COMPLETED",
+  "author": "user1@mail.com",
+  "assignee": "user2@mail.com"
+}</code></pre>
+<p><strong>Example 3.</strong> <em>GET request to the /api/tasks?assignee=user2@mail.com endpoint by an authenticated user</em>:</p>
+<p><em>Response code</em>: <code class="language-json">200 OK</code></p>
+<p><em>Response body</em>:</p>
+<pre><code class="language-json">[
+  {
+    "id": "1",
+    "title": "new task",
+    "description": "a task for anyone",
+    "status": "COMPLETED",
+    "author": "user1@mail.com",
+    "assignee": "user2@mail.com"
+  }
+]</code></pre>
+<p><strong>Example 4.</strong> <em>GET request to the /api/tasks?author=user2@mail.com&amp;assignee=user1@mail.com by an authenticated user</em>:</p>
+<p><em>Response code</em>: <code class="language-json">200 OK</code></p>
+<p><em>Response body</em>:</p>
+<pre><code class="language-json">[]</code></pre>
+<p><strong>Example 5.</strong> <em>GET request to the /api/tasks?author=user2@mail.com&amp;assignee=user1@mail.com by an unauthenticated user</em>:</p>
+<p><em>Response code</em>: <code class="language-json">401 UNAUTHORIZED</code></p>
+</div>

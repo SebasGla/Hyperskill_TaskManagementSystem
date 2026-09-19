@@ -1,0 +1,81 @@
+<div class="step-text">
+<h5 id="description">Description</h5>
+<p>In a task management system, you'll often be working with multiple users. Therefore, it's useful to begin by setting up the user registration process and API access. It's important you store user data in a database right from the start and set up the project accordingly.</p>
+<p>You should provide a REST API for users. Now, you need to create two endpoints, one for user registration and another one for testing access control. Using Spring Security, you can secure these endpoints. To carry out tests, you should set up Spring Security correctly:</p>
+<pre><code class="language-java">@Bean
+public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    return http
+            .httpBasic(Customizer.withDefaults()) // enable basic HTTP authentication
+            .authorizeHttpRequests(auth -&gt; auth
+                    // other matchers
+                    .requestMatchers("/error").permitAll() // expose the /error endpoint
+                    .requestMatchers("/actuator/shutdown").permitAll() // required for tests
+                    .requestMatchers("/h2-console/**").permitAll() // expose H2 console
+            )
+            .csrf(AbstractHttpConfigurer::disable) // allow modifying requests from tests
+            .sessionManagement(sessions -&gt;
+                    sessions.sessionCreationPolicy(SessionCreationPolicy.STATELESS) // no session
+            )
+            .build();
+    }</code></pre>
+<p>Store all data in the H2 database on disk. Don't forget to include these lines in the <code class="language-java">application.properties</code> file:</p>
+<pre><code class="language-no-highlight">spring.datasource.url=jdbc:h2:file:../tms_db
+spring.datasource.driverClassName=org.h2.Driver
+spring.datasource.username=sa
+spring.datasource.password=sa
+
+spring.jpa.hibernate.ddl-auto=update
+
+spring.h2.console.enabled=true
+spring.h2.console.settings.trace=false
+spring.h2.console.settings.web-allow-others=false</code></pre>
+<h5 id="objectives">Objectives</h5>
+<ul>
+<li>
+<p>Set up a <code class="language-java">POST /api/accounts</code> endpoint that takes a unique email and password as a JSON object in this format:</p>
+<pre><code class="language-json">{
+  "email": &lt;unique string&gt;,
+  "password": &lt;string&gt;
+}</code></pre>
+<p>and responds with a <code class="language-java">200 OK</code> status code. Check the request body. If the <code class="language-java">email</code> or <code class="language-java">password</code> are empty, blank, or missing, the endpoint should respond with a <code class="language-java">400 BAD REQUEST</code> status code. The endpoint should also respond with a <code class="language-java">400 BAD REQUEST</code> status code if the email format is invalid. Additionally, ensure that the password is at least 6 characters long. If the password is shorter than this, the endpoint should respond with a <code class="language-java">400 BAD REQUEST</code> status code.</p>
+</li>
+<li>
+<p>Guarantee each user has a unique email address. If a registration request includes an email address already in the system, the user registration endpoint should respond with a <code class="language-java">409 CONFLICT</code> status code. Treat email addresses as case-insensitive, so <code class="language-java">address@domain.net</code> and <code class="language-java">ADDRESS@DOMAIN.NET</code> are regarded as the same address.</p>
+</li>
+<li>
+<p>Create a <code class="language-java">GET /api/tasks</code> endpoint that responds with a <code class="language-java">200 OK</code> status code.</p>
+</li>
+<li>
+<p>Enable security and require users to authenticate using basic HTTP authentication to access the <code class="language-java">GET /api/tasks</code> endpoint. If a user tries to access it without providing a valid username and password, the service should respond with a <code class="language-java">401 UNAUTHORIZED</code> status code.</p>
+</li>
+<li>
+<p>Ensure that all data remains even after the server restarts.</p>
+</li>
+</ul>
+<h5 id="examples">Examples</h5>
+<p><strong>Example 1. </strong><em>POST request to /api/accounts endpoint</em>:</p>
+<p><em>Request body:</em></p>
+<pre><code class="language-json">{
+  "email": "address@domain.net",
+  "password": "password"
+}</code></pre>
+<p><em>Response code:</em><code class="language-java">200 OK</code></p>
+<p><strong>Example 2. </strong><em>POST request to /api/accounts endpoint with an invalid request body</em>:</p>
+<p><em>Request body:</em></p>
+<pre><code class="language-json">{
+  "email": "address",
+  "password": ""
+}</code></pre>
+<p><em>Response code:</em><code class="language-java">400 BAD REQUEST</code></p>
+<p><strong>Example 3. </strong><em>POST request to /api/accounts endpoint with an email address that's already taken</em>:</p>
+<p>Request body:</p>
+<pre><code class="language-json">{
+  "email": "ADDRESS@DOMAIN.NET",
+  "password": "password"
+}</code></pre>
+<p><em>Response code:</em><code class="language-java">409 CONFLICT</code></p>
+<p><strong>Example 4. </strong><em>GET request to /api/tasks endpoint with correct credentials:</em></p>
+<p><em>Response code:</em><code class="language-java">200 OK</code></p>
+<p><strong>Example 5. </strong><em>GET request to /api/tasks endpoint with incorrect credentials:</em></p>
+<p><em>Response code:</em><code class="language-java">401 UNAUTHORIZED</code></p>
+</div>

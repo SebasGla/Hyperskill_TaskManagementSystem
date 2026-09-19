@@ -1,0 +1,101 @@
+<div class="step-text">
+<h5 id="description">Description</h5>
+<p>In this stage, you need to create ways for users to interact. Any logged-in user should have the option to leave comments on any task. Moreover, they should be able to request all the comments on any given task. To make things easier for the users, comments should include the author's details and should be sorted from newest to oldest.</p>
+<p>Furthermore, when a user asks for a task list, the details of each task should include the total comments it received. As you add this function, keep performance in mind and try to limit the number of database requests.</p>
+<p>All functions from previous stages should remain functional.</p>
+<p>After completing this stage, you will have a solid foundation of a task management system that you can further enhance by introducing features such as modifying and deleting tasks and comments, enabling file attachments, and more.</p>
+<h5 id="objectives">Objectives</h5>
+<ul>
+<li>
+<p>Create the <code class="language-json">POST /api/tasks/&lt;taskId&gt;/comments</code> endpoint to accept a JSON body with the comment text:</p>
+<pre><code class="language-json">{
+  "text": &lt;string, not blank&gt;
+}</code></pre>
+<p>and reply with the status code <code class="language-json">200 OK</code>. If the request body is not valid, return the status code <code class="language-json">400 BAD REQUEST</code>. If you cannot find any task using the supplied <code class="language-json">taskId</code> path variable, answer with the status code <code class="language-json">404 NOT FOUND</code>. Only logged-in users can post comments, otherwise, reply with the status code <code class="language-json">401 UNAUTHORIZED</code>.</p>
+</li>
+<li>
+<p>Create the <code class="language-json">GET /api/tasks/&lt;taskId&gt;/comments</code> endpoint to fetch all the comments for the task identified by an identifier. The endpoint should reply with the status code <code class="language-json">200 OK</code> and a JSON array of comments containing the following details:</p>
+<pre><code class="language-json">[
+  {
+    "id": &lt;string&gt;,
+    "task_id": &lt;string&gt;,
+    "text": &lt;string&gt;,
+    "author": &lt;string&gt;
+  },
+  // other comments
+]</code></pre>
+<p>where <code class="language-json">id</code> is the unique identifier of the comment, <code class="language-json">task_id</code> is the identifier of the task the comment pertains to, <code class="language-json">text</code> is the comment's text and <code class="language-json">author</code> is the email of the user who made the comment. The array should be sorted so that newer comments appear first.<br/>
+	If the user is not logged in, return <code class="language-json">401 UNAUTHORIZED</code>. If no task can be found using the provided <code class="language-json">taskId</code> path variable, answer with the status code <code class="language-json">404 NOT FOUND</code>.</p>
+</li>
+<li>
+<p>Update the <code class="language-json">GET /api/tasks</code> endpoint. Now the fetched list of tasks should include the total number of comments for each task:</p>
+<pre><code class="language-json">[
+  {
+    "id": &lt;string&gt;,
+    "title": &lt;string&gt;,
+    "description": &lt;string&gt;,
+    "status": &lt;string&gt;,
+    "author": &lt;string&gt;,
+    "assignee": &lt;string&gt;,
+    "total_comments": &lt;integer&gt;
+  },
+  // other tasks
+]</code></pre>
+<p>Other requirements for this endpoint must remain the same, including filtering.</p>
+</li>
+</ul>
+<h5 id="examples">Examples</h5>
+<p><strong>Example 1.</strong> <em>POST request to the /api/tasks/1/comments endpoint by a logged-in user</em>:<br/>
+<em>Request body</em>:</p>
+<pre><code class="language-json">{
+  "text": "I'll be happy to take it!"
+}</code></pre>
+<p><em>Response code</em>: <code class="language-json">200 OK</code></p>
+<p><strong>Example 2.</strong> <em>POST request to the /api/tasks/1/comments endpoint by a logged-in user</em>:<br/>
+<em>Request body</em>:</p>
+<pre><code class="language-json">{
+  "text": ""
+}</code></pre>
+<p><em>Response code</em>: <code class="language-json">400 BAD REQUEST</code></p>
+<p><strong>Example 3.</strong> <em>POST request to the /api/tasks/300/comments endpoint by a logged-in user</em>:</p>
+<p><em>Request body</em>:</p>
+<pre><code class="language-json">{
+  "text": "I'll be happy to take it!"
+}</code></pre>
+<p><em>Response code</em>: <code class="language-json">404 NOT FOUND</code></p>
+<p><em>Response body</em>:</p>
+<p><strong>Example 4.</strong> <em>GET request to the /api/tasks endpoint by a logged-in user</em>:</p>
+<p><em>Response code</em>: <code class="language-json">200 OK</code></p>
+<p><em>Response body</em>:</p>
+<pre><code class="language-json">[
+  {
+    "id": "2",
+    "title": "second task",
+    "description": "another task",
+    "status": "CREATED",
+    "author": "user2@mail.com",
+    "assignee": "none",
+    "total_comments": 0
+  },
+  {
+    "id": "1",
+    "title": "new task",
+    "description": "a task for anyone",
+    "status": "COMPLETED",
+    "author": "user1@mail.com",
+    "assignee": "user2@mail.com",
+    "total_comments": 1
+  }
+]</code></pre>
+<p><strong>Example 5.</strong> <em>GET request to the /api/tasks/1/comments by a logged-in user</em>:</p>
+<p><em>Response code</em>: <code class="language-json">200 OK</code></p>
+<p><em>Response body</em>:</p>
+<pre><code class="language-json">[
+  {
+    "id": "1",
+    "task_id": "1",
+    "text": "I'll be happy to take it!",
+    "author": "user3@gmail.com"
+  }
+]</code></pre>
+</div>

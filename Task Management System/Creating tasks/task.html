@@ -1,0 +1,104 @@
+<div class="step-text">
+<h5 id="description">Description</h5>
+<p>In the last stage, you enabled users to register on the Task Management System. They should now be able to create tasks and view those created by others. Additionally, you need to implement a function that allows filtering tasks by their author for user convenience.</p>
+<p>A task should be a straightforward object encompassing a title, which should never be blank or empty, a description explaining the task's essence, and a status indicating its current state. The task should also hold information about the user who created it and who will own the task.</p>
+<p>Any authenticated user should have the ability to create a task and view a list of all tasks in the system. To make it user-friendly, arrange the task list so that the most recent tasks show up first.</p>
+<h5 id="objectives">Objectives</h5>
+<ul>
+<li>
+<p>Create the <code class="language-json">POST /api/tasks</code> endpoint to accept a JSON request body with new task details:</p>
+<pre><code class="language-json">{
+  "title": &lt;string, not null, not blank&gt;,
+  "description": &lt;string, not null, not blank&gt;
+}</code></pre>
+<p>If the request body is valid, the endpoint should respond with <code class="language-json">200 OK</code> status code and a JSON response body:</p>
+<pre><code class="language-json">{
+  "id": &lt;string&gt;,
+  "title": &lt;string&gt;,
+  "description": &lt;string&gt;,
+  "status": "CREATED",
+  "author": &lt;string&gt;
+}</code></pre>
+<p>The <code class="language-json">id</code> field is a string representation of the task's unique identifier. This doesn't mean that the identifier must be a string, but the response body should present it as a string value to not depend on the database implementation. The  <code class="language-json">author</code> field should feature the author email in lowercase.<br/>
+	If the request body is not valid, the endpoint should return a <code class="language-json">400 BAD REQUEST</code> status code.</p>
+</li>
+<li>
+<p>Modify the <code class="language-json">GET /api/tasks</code> endpoint to respond with <code class="language-json">200 OK</code> status code and return a JSON array of all created tasks, or an empty array if no tasks exist. Each array's element should follow the same format as mentioned above:</p>
+<pre><code class="language-json">[
+  {
+    "id": &lt;string&gt;,
+    "title": &lt;string&gt;,
+    "description": &lt;string&gt;,
+    "status": "CREATED",
+    "author": &lt;string&gt;
+  },
+  // other tasks
+]</code></pre>
+<p>The array should display newer tasks first.</p>
+</li>
+<li>
+<p>The <code class="language-json">GET /api/tasks</code> endpoint should also accept an optional <code class="language-json">author</code> parameter to return an array of tasks authored by a particular user. Treat this parameter as case insensitive:</p>
+<pre><code class="language-no-highlight">GET /api/tasks?author=address@domain.net</code></pre>
+</li>
+<li>
+<p>Only authenticated users should have access to the tasks endpoints. If accessed by unauthorized users, respond with a <code class="language-json">401 UNAUTHORIZED</code> status code.</p>
+</li>
+<li>
+<p>Store all data in the database.</p>
+</li>
+</ul>
+<h5 id="examples">Examples</h5>
+<p><strong>Example 1.</strong> <em>POST request to /api/tasks endpoint by a registered user with valid credentials (username=user1@mail.com)</em>:</p>
+<p><em>Request body</em>:</p>
+<pre><code class="language-json">{
+  "title": "new task",
+  "description": "a task for anyone"
+}</code></pre>
+<p><em>Response code</em>: <code class="language-json">200 OK</code></p>
+<p><em>Response body</em>:</p>
+<pre><code class="language-json">{
+  "id": "1",
+  "title": "new task",
+  "description": "a task for anyone",
+  "status": "CREATED",
+  "author": "user1@mail.com"
+}</code></pre>
+<p><strong>Example 2.</strong> <em>POST request to /api/tasks endpoint with an invalid request body by an authenticated user:</em></p>
+<p><em>Request body</em>:</p>
+<pre><code class="language-json">{
+  "title": "",
+  "description": "a task for anyone"
+}</code></pre>
+<p><em>Response code</em>: <code class="language-json">400 BAD REQUEST</code></p>
+<p><strong>Example 3.</strong> <em>POST request to /api/developers/signup endpoint with invalid credentials</em>:</p>
+<p><em>Request body</em>:</p>
+<pre><code class="language-json">{
+  "title": "new task",
+  "description": "a task for anyone"
+}</code></pre>
+<p><em>Response code</em>: <code class="language-json">401 UNAUTHORIZED</code></p>
+<p><strong>Example 4.</strong> <em>GET request to /api/tasks endpoint with valid user credentials</em>:</p>
+<p><em>Response code</em>: <code class="language-json">200 OK</code></p>
+<p><em>Response body</em>:</p>
+<pre><code class="language-json">[
+  {
+    "id": "1",
+    "title": "new task",
+    "description": "a task for anyone",
+    "status": "CREATED",
+    "author": "user1@mail.com"
+  }
+]</code></pre>
+<p><strong>Example 5.</strong> <em>GET request to /api/tasks?author=USER1@mail.com with valid user credentials</em>:</p>
+<p><em>Response code</em>: <code class="language-json">200 OK</code></p>
+<p><em>Response body</em>:</p>
+<pre><code class="language-json">[
+  {
+    "id": "1",
+    "title": "new task",
+    "description": "a task for anyone",
+    "status": "CREATED",
+    "author": "user1@mail.com"
+  }
+]</code></pre>
+</div>

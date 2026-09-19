@@ -1,0 +1,24 @@
+# Hyperskill & JetBrains Academy Plugin
+.hs/
+*.yaml
+.courseignore
+
+# Gradle & Spring Boot Build Output
+build/
+out/
+.gradle/
+
+# IntelliJ & IDE
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Lokale Datenbanken (z. B. H2, SQLite falls in Spring Boot genutzt)
+*.db
+*.mv.db
+*.trace.db
+
+# OS
+.DS_Store
+Thumbs.db
