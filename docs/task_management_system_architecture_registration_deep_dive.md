@@ -14,7 +14,7 @@ The application follows a layered design pattern. Each component has a single, c
 | `SecurityConfiguration` | Configuration (`taskmanagement.security`) | Sets the security filter chain, declares open vs. protected routes, and exposes shared beans like `PasswordEncoder`. | 
 | `UserAdapter` | Security Bridge (`taskmanagement.security`) | Translates the domain entity (`UserEntity`) into Spring Security's native identity model (`UserDetails`). | 
 | `UserDetailsServiceImpl` | Security Lookup (`taskmanagement.security`) | Strategy bean used by Spring Security during authentication to fetch user records by username/email. | 
-
+---
 ## 2. Core Security Concepts: `UserDetails` vs. `UserDetailsService`
 
 Spring Security decouples **how your application stores data** from **how the framework authenticates a principal**. It accomplishes this via two core contracts:
