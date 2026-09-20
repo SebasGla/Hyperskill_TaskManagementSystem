@@ -19,8 +19,9 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        repository.findUserByEmail(email).orElseThrow(() ->new UsernameNotFoundException("Email not found!"));
-        return null;
+        return repository.findUserByEmail(email)
+                .map(UserAdapter::new)
+                .orElseThrow(() -> new UsernameNotFoundException("Email not found: " + email));
     }
 
 }
