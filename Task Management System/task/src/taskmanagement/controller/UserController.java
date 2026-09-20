@@ -13,6 +13,8 @@ import taskmanagement.dto.CreateUserRequest;
 import taskmanagement.user.UserEntity;
 import taskmanagement.user.UserRepository;
 
+import java.util.Locale;
+
 @RestController
 @RequestMapping("/api/accounts")
 public class UserController {
@@ -26,14 +28,15 @@ public class UserController {
 
     @PostMapping
     ResponseEntity<Void> registerUser(@Valid @RequestBody CreateUserRequest newUserDto){
-        if (repository.existsByEmail(newUserDto.email())){
+        String normalizedEmail = newUserDto.email().toLowerCase();
+        if (repository.existsByEmail(normalizedEmail)){
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
 
         String encodedPassword = encoder.encode(newUserDto.password());
 
         UserEntity newUser = new UserEntity();
-        newUser.setEmail(newUserDto.email());
+        newUser.setEmail(normalizedEmail);
         newUser.setPassword(encodedPassword);
         repository.save(newUser);
 

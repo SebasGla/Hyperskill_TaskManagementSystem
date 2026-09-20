@@ -277,14 +277,15 @@ public class UserController {
 
     @PostMapping
     ResponseEntity<Void> registerUser(@Valid @RequestBody CreateUserRequest newUserDto) {
-        if (repository.existsByEmail(newUserDto.email())) {
+        String normalizedEmail = newUserDto.email().toLowerCase();
+        if (repository.existsByEmail(normalizedEmail)) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
 
         String encodedPassword = encoder.encode(newUserDto.password());
 
         UserEntity newUser = new UserEntity();
-        newUser.setEmail(newUserDto.email());
+        newUser.setEmail(normalizedEmail);
         newUser.setPassword(encodedPassword);
         repository.save(newUser);
 
@@ -338,6 +339,14 @@ String encodedPassword = encoder.encode(newUserDto.password());
 ```
 * Raw passwords must never be stored directly in the database.
 * The injected `PasswordEncoder` (configured as `BCryptPasswordEncoder`) hashes the plaintext password with a salt, producing a secure hash before setting it on `UserEntity`.
+
+#### 9. Email Normalization (`.toLowerCase()`)
+```java
+String normalizedEmail = newUserDto.email().toLowerCase();
+```
+* **Case-Insensitive Uniqueness:** RFC email specifications and user expectations treat email addresses as case-insensitive (`User@Example.com` and `user@example.com` refer to the same person).
+* **Preventing Duplicate Accounts:** Depending on database collation settings, string comparisons can be case-sensitive. Without normalization, a user could register twice with different letter cases, bypassing duplicate checks and creating conflicting accounts.
+* **Consistent Storage:** Converting emails to lowercase before checking `existsByEmail(...)` and before persisting to `UserEntity` guarantees that all email records in the database follow a consistent lowercase standard.
 
 ---
 
@@ -453,7 +462,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        return repository.findUserByEmail(email)
+        return repository.findUserByEmail(email.toLowerCase())
                 .map(UserAdapter::new)
                 .orElseThrow(() -> new UsernameNotFoundException("Email not found: " + email));
     }
@@ -472,9 +481,13 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 * Signature: `UserDetails loadUserByUsername(String username) throws UsernameNotFoundException;`
 * Spring Security calls this method during login, passing the username (here, the email) from the incoming request.
 * **Execution Flow:**
-  1. `repository.findUserByEmail(email)` queries the database via Spring Data JPA.
+  1. `repository.findUserByEmail(email.toLowerCase())` queries the database via Spring Data JPA using the lowercase-normalized email.
   2. `.map(UserAdapter::new)`: If the user is found, wraps the `UserEntity` inside a new `UserAdapter` (which satisfies the `UserDetails` return type).
   3. `.orElseThrow(...)`: If the email does not exist, throws `UsernameNotFoundException`. Spring Security catches this exception and halts authentication, responding with `401 Unauthorized`.
+
+#### 3. Case-Insensitive Lookup (`email.toLowerCase()`)
+* Normalizing the input email with `.toLowerCase()` aligns the lookup with the normalization applied during registration in `UserController`.
+* Mobile devices and virtual keyboards frequently auto-capitalize the initial letter of input fields (e.g. `User@domain.com`). Normalizing during login prevents authentication failures due to casing discrepancies.
 
 *(Note: The constructor in `UserDetailsServiceImpl.java` can omit the unused `PasswordEncoder encoder` parameter).*
 
