@@ -3,6 +3,9 @@ package taskmanagement.tasks;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import org.springframework.data.annotation.CreatedDate;
+
+import java.time.Instant;
 
 @Entity
 public class TaskEntity {
@@ -20,6 +23,9 @@ public class TaskEntity {
     private TaskStatus status;
 
     private String author;
+
+    @Column(nullable = false, updatable = false)
+    private Instant createdAt = Instant.now();
 
     public TaskEntity() {
     }

@@ -40,7 +40,7 @@ public class UserController {
         newUser.setPassword(encodedPassword);
         repository.save(newUser);
 
-    return ResponseEntity.ok().build();
+        return ResponseEntity.ok().build();
 
     }
 
