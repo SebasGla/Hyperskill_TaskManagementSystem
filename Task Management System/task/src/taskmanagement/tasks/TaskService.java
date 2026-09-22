@@ -20,12 +20,16 @@ public class TaskService {
         task.setTitle(taskDto.title());
         task.setDescription(taskDto.description());
         task.setStatus(TaskStatus.CREATED);
-        task.setAuthor(username);
+        task.setAuthor(username.toLowerCase());
         this.taskRepository.save(task);
         return TaskCreateResponseDto.from(task);
     }
 
     public List<TaskCreateResponseDto> getAllTasks(){
         return taskRepository.findByOrderByCreatedAtDesc().stream().map(TaskCreateResponseDto::from).toList();
+    }
+
+    public List<TaskCreateResponseDto> getUserTasks(String username){
+        return taskRepository.findAllByAuthorOrderByCreatedAtDesc(username).stream().map(TaskCreateResponseDto::from).toList();
     }
 }

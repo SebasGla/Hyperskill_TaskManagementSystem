@@ -22,7 +22,11 @@ public class TaskController {
     }
 
     @GetMapping
-    ResponseEntity<List<TaskCreateResponseDto>> getTask(){
+    ResponseEntity<List<TaskCreateResponseDto>> getTasks(@RequestParam(name = "author", required = false) String author){
+        if(author != null && author !=null){
+            return ResponseEntity.ok(taskService.getUserTasks(author.toLowerCase()));
+        }
+
         return ResponseEntity.ok(taskService.getAllTasks());
     }
 
