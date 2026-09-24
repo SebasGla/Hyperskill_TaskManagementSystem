@@ -36,4 +36,5 @@ public class TaskController {
         TaskCreateResponseDto responseDto = this.taskService.createNewTask(createDto, userDetails.getUsername());
         return ResponseEntity.ok(responseDto);
     }
+
 }
