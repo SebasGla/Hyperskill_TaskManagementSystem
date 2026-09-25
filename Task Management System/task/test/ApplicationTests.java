@@ -9,6 +9,7 @@ import org.hyperskill.hstest.testing.expect.json.builder.JsonArrayBuilder;
 import org.hyperskill.hstest.testing.expect.json.builder.JsonObjectBuilder;
 
 import java.util.List;
+import java.util.Map;
 
 import static org.hyperskill.hstest.testing.expect.Expectation.expect;
 import static org.hyperskill.hstest.testing.expect.json.JsonChecker.isArray;
@@ -16,8 +17,10 @@ import static org.hyperskill.hstest.testing.expect.json.JsonChecker.isObject;
 import static org.hyperskill.hstest.testing.expect.json.JsonChecker.isString;
 
 public class ApplicationTests extends SpringTest {
+    private static final String fakeToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
     private static final String accountsUrl = "/api/accounts";
     private static final String tasksUrl = "/api/tasks";
+    private static final String tokenUrl = "/api/auth/token";
     private final Gson gson = new Gson();
 
     public ApplicationTests() {
@@ -40,9 +43,38 @@ public class ApplicationTests extends SpringTest {
         return CheckResult.correct();
     }
 
+    CheckResult testLogin(TestUser user, int expectedCode) {
+        var response = post(tokenUrl, Map.of())
+                .basicAuth(user.getEmail(), user.getPassword())
+                .send();
+
+        System.out.println(getRequestDetails(response));
+
+        var actualCode = response.getStatusCode();
+        if (actualCode != expectedCode) {
+            return CheckResult.wrong(
+                    "Expected status code %d but received %d".formatted(expectedCode, actualCode)
+            );
+        }
+
+        if (actualCode == 200) {
+            expect(response.getContent()).asJson().check(
+                    isObject()
+                            .value("token", isString())
+            );
+
+            var token = response.getJson().getAsJsonObject().get("token").getAsString();
+            user.setToken(token);
+        }
+
+        return CheckResult.correct();
+    }
+
     CheckResult testCreateTask(TestTask task, TestUser author, int expectedCode) {
         var content = gson.toJson(task);
-        var response = post(tasksUrl, content).basicAuth(author.email(), author.password()).send();
+        var response = post(tasksUrl, content)
+                .addHeader("Authorization", "Bearer " + author.getToken())
+                .send();
 
         System.out.println(getRequestDetails(response));
 
@@ -60,9 +92,9 @@ public class ApplicationTests extends SpringTest {
                             .value("title", task.getTitle())
                             .value("description", task.getDescription())
                             .value("status", "CREATED")
-                            .value("author", author.email())
+                            .value("author", author.getEmail())
             );
-            task.setAuthor(author.email());
+            task.setAuthor(author.getEmail());
             task.setStatus("CREATED");
         }
 
@@ -74,7 +106,7 @@ public class ApplicationTests extends SpringTest {
     }
 
     CheckResult testGetTasksByAuthor(TestUser user, String author, List<TestTask> expectedTasks, int expectedCode) {
-        var request = get(tasksUrl).basicAuth(user.email(), user.password());
+        var request = get(tasksUrl).addHeader("Authorization", "Bearer " + user.getToken());
         if (author != null) {
             request = request.addParam("author", author);
         }
@@ -144,31 +176,36 @@ public class ApplicationTests extends SpringTest {
             () -> testCreateUser(TestUser.withBadPassword("      "), 400),
             () -> testCreateUser(TestUser.withBadPassword("12345"), 400), // #10
 
+            // test login
+            () -> testLogin(alice, 200),
+            () -> testLogin(bob, 200),
+            () -> testLogin(alice.withPassword("badpassword"), 401),
+            () -> testLogin(alice.withEmail("test@test.com"), 401),
+
             // create task
-            () -> testCreateTask(firstTask, alice, 200),
+            () -> testCreateTask(firstTask, alice, 200), // #15
             () -> testCreateTask(secondTask, alice, 200),
             () -> testCreateTask(thirdTask, bob, 200),
             () -> testCreateTask(thirdTask.withTitle(null), bob, 400),
-            () -> testCreateTask(firstTask.withTitle(" "), bob, 400),  // #15
-            () -> testCreateTask(firstTask.withDescription(null), bob, 400),
+            () -> testCreateTask(firstTask.withTitle(" "), bob, 400),
+            () -> testCreateTask(firstTask.withDescription(null), bob, 400),   // #20
             () -> testCreateTask(firstTask.withDescription(" "), bob, 400),
 
             // get all tasks
             () -> testGetAllTasks(alice, List.of(thirdTask, secondTask, firstTask), 200),
             () -> testGetAllTasks(bob, List.of(thirdTask, secondTask, firstTask), 200),
-            () -> testGetAllTasks(alice.withEmail("alice@test.com"), List.of(), 401), // #20
-            () -> testGetAllTasks(alice.withEmail("ALICE@email.com"), List.of(thirdTask, secondTask, firstTask), 200),
-            () -> testGetAllTasks(alice.withPassword("Password"), List.of(), 401),
+            () -> testGetAllTasks(alice.withToken(""), List.of(), 401),
+            () -> testGetAllTasks(alice.withToken(fakeToken), List.of(thirdTask, secondTask, firstTask), 401), // #25
 
             // get tasks by author
-            () -> testGetTasksByAuthor(alice, alice.email(), List.of(secondTask, firstTask), 200),
-            () -> testGetTasksByAuthor(bob, alice.email(), List.of(secondTask, firstTask), 200),
-            () -> testGetTasksByAuthor(alice, bob.email(), List.of(thirdTask), 200), // #25
+            () -> testGetTasksByAuthor(alice, alice.getEmail(), List.of(secondTask, firstTask), 200),
+            () -> testGetTasksByAuthor(bob, alice.getEmail(), List.of(secondTask, firstTask), 200),
+            () -> testGetTasksByAuthor(alice, bob.getEmail(), List.of(thirdTask), 200),
             () -> testGetTasksByAuthor(alice, "unknown", List.of(), 200),
 
             // test persistence
-            this::reloadServer,
-            () -> testCreateUser(alice, 409),
+            this::reloadServer,  // #30
+            () -> testLogin(alice, 200),
             () -> testGetAllTasks(alice, List.of(thirdTask, secondTask, firstTask), 200),
     };
 }

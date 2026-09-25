@@ -2,6 +2,7 @@ package taskmanagement.controller;
 
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
@@ -32,8 +33,8 @@ public class TaskController {
 
     @PostMapping
     ResponseEntity<TaskCreateResponseDto> createTask(@Valid @RequestBody TaskCreateDto createDto,
-                                                     @AuthenticationPrincipal UserDetails userDetails){
-        TaskCreateResponseDto responseDto = this.taskService.createNewTask(createDto, userDetails.getUsername());
+                                                     Authentication authentication){
+        TaskCreateResponseDto responseDto = this.taskService.createNewTask(createDto, authentication.getName());
         return ResponseEntity.ok(responseDto);
     }
 
