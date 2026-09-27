@@ -1,16 +1,19 @@
 package taskmanagement.controller;
 
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import taskmanagement.dto.AssignDto;
 import taskmanagement.dto.TaskCreateDto;
 import taskmanagement.dto.TaskCreateResponseDto;
 import taskmanagement.tasks.TaskService;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/tasks")
@@ -35,6 +38,21 @@ public class TaskController {
     ResponseEntity<TaskCreateResponseDto> createTask(@Valid @RequestBody TaskCreateDto createDto,
                                                      Authentication authentication){
         TaskCreateResponseDto responseDto = this.taskService.createNewTask(createDto, authentication.getName());
+        return ResponseEntity.ok(responseDto);
+    }
+
+    @PutMapping("{taskId}/assign")
+    ResponseEntity<TaskCreateResponseDto> updateAssignee(@Valid @RequestBody AssignDto assignee, @PathVariable UUID taskId,
+                                                         Authentication authentication){
+        if (!this.taskService.checkTaskExists(taskId)){
+            return ResponseEntity.notFound().build();
+        }
+
+        if(!this.taskService.checkAssigneeFits(authentication.getName(), taskId)){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        TaskCreateResponseDto responseDto = this.taskService.updateAssignee(assignee, taskId);
         return ResponseEntity.ok(responseDto);
     }
 

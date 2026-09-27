@@ -27,7 +27,25 @@ public class TaskEntity {
     @Column(nullable = false, updatable = false)
     private Instant createdAt = Instant.now();
 
+    private String assignee;
+
     public TaskEntity() {
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
+    public String getAssignee() {
+        return assignee;
+    }
+
+    public void setAssignee(String assignee) {
+        this.assignee = assignee;
+    }
+
+    public void setCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
     }
 
     public String getId() {

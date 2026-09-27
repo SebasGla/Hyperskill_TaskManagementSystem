@@ -36,11 +36,14 @@ public class SecurityConfiguration {
                         .requestMatchers(HttpMethod.POST, "/api/accounts").permitAll()
                         .requestMatchers("/api/tasks").authenticated()
                         .requestMatchers("/api/auth/token").authenticated()
+                        .requestMatchers("/api/tasks/{taskId}/assign").authenticated()
                         .requestMatchers("/error").permitAll() // expose the /error endpoint
                         .requestMatchers("/actuator/shutdown").permitAll() // required for tests
                         .requestMatchers("/h2-console/**").permitAll()// expose H2 console
                         .anyRequest().denyAll()
                 )
+                .headers(headers -> headers
+                        .frameOptions(frameOptions -> frameOptions.sameOrigin()))
                 .csrf(AbstractHttpConfigurer::disable) // allow modifying requests from tests
                 .sessionManagement(sessions ->
                         sessions.sessionCreationPolicy(SessionCreationPolicy.STATELESS) // no session

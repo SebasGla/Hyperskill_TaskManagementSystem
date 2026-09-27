@@ -1,10 +1,12 @@
 package taskmanagement.tasks;
 
 import org.springframework.stereotype.Service;
+import taskmanagement.dto.AssignDto;
 import taskmanagement.dto.TaskCreateDto;
 import taskmanagement.dto.TaskCreateResponseDto;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class TaskService {
@@ -21,6 +23,14 @@ public class TaskService {
         task.setDescription(taskDto.description());
         task.setStatus(TaskStatus.CREATED);
         task.setAuthor(username.toLowerCase());
+        task.setAssignee("none");
+        this.taskRepository.save(task);
+        return TaskCreateResponseDto.from(task);
+    }
+
+    public TaskCreateResponseDto updateAssignee(AssignDto assignDto, UUID uuid){
+        TaskEntity task = this.taskRepository.getById(uuid.toString());
+        task.setAssignee(assignDto.assignee().toLowerCase());
         this.taskRepository.save(task);
         return TaskCreateResponseDto.from(task);
     }
@@ -31,5 +41,14 @@ public class TaskService {
 
     public List<TaskCreateResponseDto> getUserTasks(String username){
         return taskRepository.findAllByAuthorOrderByCreatedAtDesc(username).stream().map(TaskCreateResponseDto::from).toList();
+    }
+
+    public boolean checkTaskExists(UUID uuid){
+        return taskRepository.existsById(uuid.toString().toLowerCase());
+    }
+
+    public boolean checkAssigneeFits(String username, UUID uuid){
+        TaskEntity task = this.taskRepository.getById(uuid.toString());
+        return task.getAuthor().equals(username);
     }
 }
