@@ -4,10 +4,10 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
+
 import org.springframework.web.bind.annotation.*;
 import taskmanagement.dto.AssignDto;
+import taskmanagement.dto.StatusDto;
 import taskmanagement.dto.TaskCreateDto;
 import taskmanagement.dto.TaskCreateResponseDto;
 import taskmanagement.tasks.TaskService;
@@ -27,7 +27,7 @@ public class TaskController {
 
     @GetMapping
     ResponseEntity<List<TaskCreateResponseDto>> getTasks(@RequestParam(name = "author", required = false) String author){
-        if(author != null && author !=null){
+        if(author != null){
             return ResponseEntity.ok(taskService.getUserTasks(author.toLowerCase()));
         }
 
@@ -54,6 +54,17 @@ public class TaskController {
 
         TaskCreateResponseDto responseDto = this.taskService.updateAssignee(assignee, taskId);
         return ResponseEntity.ok(responseDto);
+    }
+
+    @PutMapping("{taskId}/status")
+    ResponseEntity<TaskCreateResponseDto> updateStatus(@Valid StatusDto status, @PathVariable UUID taskId,
+                                                       Authentication authentication){
+
+        TaskCreateResponseDto response = taskService.updateTaskStatus(authentication.getName(),taskId, status );
+
+        return ResponseEntity.ok(response);
+
+
     }
 
 }

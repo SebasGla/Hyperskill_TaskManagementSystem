@@ -1,11 +1,16 @@
 package taskmanagement.tasks;
 
+
 import org.springframework.stereotype.Service;
 import taskmanagement.dto.AssignDto;
+import taskmanagement.dto.StatusDto;
 import taskmanagement.dto.TaskCreateDto;
 import taskmanagement.dto.TaskCreateResponseDto;
+import taskmanagement.exception.TaskForbiddenException;
+import taskmanagement.exception.TaskNotFoundException;
 
 import java.util.List;
+
 import java.util.UUID;
 
 @Service
@@ -48,7 +53,22 @@ public class TaskService {
     }
 
     public boolean checkAssigneeFits(String username, UUID uuid){
-        TaskEntity task = this.taskRepository.getById(uuid.toString());
-        return task.getAuthor().equals(username);
+        TaskEntity task = this.taskRepository.getById(uuid.toString().toLowerCase());
+        return task.getAuthor().equals(username.toLowerCase());
     }
+
+    public TaskCreateResponseDto updateTaskStatus(String username, UUID uuid, StatusDto status){
+       TaskEntity task = taskRepository.findById(uuid.toString().toLowerCase())
+               .orElseThrow(() -> new TaskNotFoundException(uuid+" not Found"));
+
+       if(!(task.getAssignee().equals(username) || task.getAuthor().equals(username))){
+           throw new TaskForbiddenException("Only Author or Assignee can change task status!");
+       }
+
+       task.setStatus(status.status());
+       this.taskRepository.save(task);
+
+       return TaskCreateResponseDto.from(task);
+    }
+
 }
