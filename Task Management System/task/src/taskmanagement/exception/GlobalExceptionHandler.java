@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(TaskNotFoundException.class)
+    @ExceptionHandler({TaskNotFoundException.class, AssigneeNotFoundException.class})
     public ResponseEntity<Void> handleNotFound() {
         return ResponseEntity.notFound().build();
     }
@@ -17,6 +17,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Void> handleForbidden() {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
+
 
 
 }

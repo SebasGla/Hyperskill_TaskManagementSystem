@@ -1,7 +1,6 @@
 package taskmanagement.controller;
 
 import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 
@@ -13,7 +12,7 @@ import taskmanagement.dto.TaskCreateResponseDto;
 import taskmanagement.tasks.TaskService;
 
 import java.util.List;
-import java.util.UUID;
+
 
 @RestController
 @RequestMapping("/api/tasks")
@@ -26,9 +25,19 @@ public class TaskController {
     }
 
     @GetMapping
-    ResponseEntity<List<TaskCreateResponseDto>> getTasks(@RequestParam(name = "author", required = false) String author){
-        if(author != null){
-            return ResponseEntity.ok(taskService.getUserTasks(author.toLowerCase()));
+    ResponseEntity<List<TaskCreateResponseDto>> getTasks(@RequestParam(name = "author", required = false) String author,
+    @RequestParam(name = "assignee", required = false) String assignee){
+        //only author parameter available
+        if(author != null && assignee == null){
+            return ResponseEntity.ok(taskService.getUserTasks(author));
+        }
+        //only assignee parameter available
+        if(author == null && assignee != null){
+            return ResponseEntity.ok(taskService.getAssigneeTasks(assignee));
+        }
+
+        if(author != null && assignee != null){
+            return ResponseEntity.ok(taskService.getByAssigneeAndByAuthor(assignee, author));
         }
 
         return ResponseEntity.ok(taskService.getAllTasks());
@@ -42,29 +51,19 @@ public class TaskController {
     }
 
     @PutMapping("{taskId}/assign")
-    ResponseEntity<TaskCreateResponseDto> updateAssignee(@Valid @RequestBody AssignDto assignee, @PathVariable UUID taskId,
+    ResponseEntity<TaskCreateResponseDto> updateAssignee(@Valid @RequestBody AssignDto assignee, @PathVariable String taskId,
                                                          Authentication authentication){
-        if (!this.taskService.checkTaskExists(taskId)){
-            return ResponseEntity.notFound().build();
-        }
 
-        if(!this.taskService.checkAssigneeFits(authentication.getName(), taskId)){
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-
-        TaskCreateResponseDto responseDto = this.taskService.updateAssignee(assignee, taskId);
+        TaskCreateResponseDto responseDto = this.taskService.updateAssignee(authentication.getName(), taskId, assignee);
         return ResponseEntity.ok(responseDto);
     }
 
     @PutMapping("{taskId}/status")
-    ResponseEntity<TaskCreateResponseDto> updateStatus(@Valid StatusDto status, @PathVariable UUID taskId,
+    ResponseEntity<TaskCreateResponseDto> updateStatus(@Valid @RequestBody StatusDto status, @PathVariable String taskId,
                                                        Authentication authentication){
 
         TaskCreateResponseDto response = taskService.updateTaskStatus(authentication.getName(),taskId, status );
-
         return ResponseEntity.ok(response);
-
-
     }
 
 }

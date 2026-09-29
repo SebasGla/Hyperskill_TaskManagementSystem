@@ -6,8 +6,10 @@ import taskmanagement.dto.AssignDto;
 import taskmanagement.dto.StatusDto;
 import taskmanagement.dto.TaskCreateDto;
 import taskmanagement.dto.TaskCreateResponseDto;
+import taskmanagement.exception.AssigneeNotFoundException;
 import taskmanagement.exception.TaskForbiddenException;
 import taskmanagement.exception.TaskNotFoundException;
+import taskmanagement.user.UserRepository;
 
 import java.util.List;
 
@@ -16,10 +18,12 @@ import java.util.UUID;
 @Service
 public class TaskService {
     private final TaskRepository taskRepository;
+    private final UserRepository userRepository;
 
-    public TaskService(TaskRepository taskRepository){
+    public TaskService(TaskRepository taskRepository, UserRepository userRepository){
 
         this.taskRepository = taskRepository;
+        this.userRepository = userRepository;
     }
 
     public TaskCreateResponseDto createNewTask(TaskCreateDto taskDto, String username){
@@ -33,9 +37,23 @@ public class TaskService {
         return TaskCreateResponseDto.from(task);
     }
 
-    public TaskCreateResponseDto updateAssignee(AssignDto assignDto, UUID uuid){
-        TaskEntity task = this.taskRepository.getById(uuid.toString());
-        task.setAssignee(assignDto.assignee().toLowerCase());
+    public TaskCreateResponseDto updateAssignee(String username, String uuid, AssignDto assignDto){
+        TaskEntity task = this.taskRepository.findById(uuid.toLowerCase()).orElseThrow(
+                () -> new TaskNotFoundException(uuid+" not Found"));
+
+        if(!task.getAuthor().equals(username.toLowerCase())){
+            throw new TaskForbiddenException("User not allowed to change assignee");
+        }
+
+        String newAssignee = assignDto.assignee().toLowerCase();
+
+        if (!"none".equals(newAssignee)) {
+            if (!this.userRepository.existsByEmail(newAssignee)) {
+                throw new AssigneeNotFoundException("Assignee does not exist");
+            }
+        }
+
+        task.setAssignee(newAssignee);
         this.taskRepository.save(task);
         return TaskCreateResponseDto.from(task);
     }
@@ -45,20 +63,19 @@ public class TaskService {
     }
 
     public List<TaskCreateResponseDto> getUserTasks(String username){
-        return taskRepository.findAllByAuthorOrderByCreatedAtDesc(username).stream().map(TaskCreateResponseDto::from).toList();
+        return taskRepository.findAllByAuthorOrderByCreatedAtDesc(username.toLowerCase()).stream().map(TaskCreateResponseDto::from).toList();
     }
 
-    public boolean checkTaskExists(UUID uuid){
-        return taskRepository.existsById(uuid.toString().toLowerCase());
+    public List<TaskCreateResponseDto> getAssigneeTasks(String assignee){
+        return taskRepository.findAllByAssigneeOrderByCreatedAtDesc(assignee.toLowerCase()).stream().map(TaskCreateResponseDto::from).toList();
     }
 
-    public boolean checkAssigneeFits(String username, UUID uuid){
-        TaskEntity task = this.taskRepository.getById(uuid.toString().toLowerCase());
-        return task.getAuthor().equals(username.toLowerCase());
+    public List<TaskCreateResponseDto> getByAssigneeAndByAuthor(String assignee, String username){
+        return taskRepository.findAllByAssigneeAndAuthorOrderByCreatedAtDesc(assignee.toLowerCase(), username.toLowerCase()).stream().map(TaskCreateResponseDto::from).toList();
     }
 
-    public TaskCreateResponseDto updateTaskStatus(String username, UUID uuid, StatusDto status){
-       TaskEntity task = taskRepository.findById(uuid.toString().toLowerCase())
+    public TaskCreateResponseDto updateTaskStatus(String username, String uuid, StatusDto status){
+       TaskEntity task = taskRepository.findById(uuid.toLowerCase())
                .orElseThrow(() -> new TaskNotFoundException(uuid+" not Found"));
 
        if(!(task.getAssignee().equals(username) || task.getAuthor().equals(username))){
