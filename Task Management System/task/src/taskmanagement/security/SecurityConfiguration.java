@@ -38,6 +38,7 @@ public class SecurityConfiguration {
                         .requestMatchers("/api/auth/token").authenticated()
                         .requestMatchers("/api/tasks/{taskId}/assign").authenticated()
                         .requestMatchers("/api/tasks/{taskId}/status").authenticated()
+                        .requestMatchers("/api/tasks/{taskId}/comments").authenticated()
                         .requestMatchers("/error").permitAll() // expose the /error endpoint
                         .requestMatchers("/actuator/shutdown").permitAll() // required for tests
                         .requestMatchers("/h2-console/**").permitAll()// expose H2 console

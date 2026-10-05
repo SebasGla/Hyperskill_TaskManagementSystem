@@ -4,8 +4,10 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.data.annotation.CreatedDate;
+import taskmanagement.comment.CommentEntity;
 
 import java.time.Instant;
+import java.util.List;
 
 @Entity
 public class TaskEntity {
@@ -28,6 +30,9 @@ public class TaskEntity {
     private Instant createdAt = Instant.now();
 
     private String assignee;
+
+    @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CommentEntity> comment;
 
     public TaskEntity() {
     }

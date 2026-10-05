@@ -2,10 +2,7 @@ package taskmanagement.tasks;
 
 
 import org.springframework.stereotype.Service;
-import taskmanagement.dto.AssignDto;
-import taskmanagement.dto.StatusDto;
-import taskmanagement.dto.TaskCreateDto;
-import taskmanagement.dto.TaskCreateResponseDto;
+import taskmanagement.dto.*;
 import taskmanagement.exception.AssigneeNotFoundException;
 import taskmanagement.exception.TaskForbiddenException;
 import taskmanagement.exception.TaskNotFoundException;
@@ -86,6 +83,11 @@ public class TaskService {
        this.taskRepository.save(task);
 
        return TaskCreateResponseDto.from(task);
+    }
+
+    public void postComment(String username, String uuid, CommentDto dto){
+
+
     }
 
 }

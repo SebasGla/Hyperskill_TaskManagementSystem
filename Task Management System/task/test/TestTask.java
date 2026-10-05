@@ -6,6 +6,7 @@ public class TestTask {
     private String author;
 
     private String assignee;
+    private Integer totalComments;
 
     private TestTask(String title, String description) {
         this.title = title;
@@ -30,6 +31,7 @@ public class TestTask {
         copy.setStatus(this.status);
         copy.setAuthor(this.author);
         copy.setAssignee(this.assignee);
+        copy.setTotalComments(this.totalComments);
         return copy;
     }
 
@@ -39,6 +41,7 @@ public class TestTask {
         copy.setStatus(this.status);
         copy.setAuthor(this.author);
         copy.setAssignee(this.assignee);
+        copy.setTotalComments(this.totalComments);
         return copy;
     }
 
@@ -48,6 +51,7 @@ public class TestTask {
         copy.setStatus(this.status);
         copy.setAuthor(this.author);
         copy.setAssignee(this.assignee);
+        copy.setTotalComments(this.totalComments);
         return copy;
     }
 
@@ -89,5 +93,21 @@ public class TestTask {
 
     public void setAssignee(String assignee) {
         this.assignee = assignee;
+    }
+
+    public Integer getTotalComments() {
+        return totalComments;
+    }
+
+    public void setTotalComments(Integer totalComments) {
+        this.totalComments = totalComments;
+    }
+
+    public void incrementTotalComments() {
+        if (totalComments == null) {
+            totalComments = 1;
+        } else {
+            totalComments++;
+        }
     }
 }

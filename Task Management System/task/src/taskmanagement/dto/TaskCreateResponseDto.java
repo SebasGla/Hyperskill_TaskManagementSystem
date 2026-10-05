@@ -4,7 +4,7 @@ import taskmanagement.tasks.TaskEntity;
 import taskmanagement.tasks.TaskStatus;
 
 public record TaskCreateResponseDto(String id, String title, String description,
-                                    TaskStatus status, String author, String assignee) {
+                                    TaskStatus status, String author, String assignee, String comment) {
     public static TaskCreateResponseDto from(TaskEntity entity){
         return new TaskCreateResponseDto(
                 entity.getId(),
@@ -12,7 +12,8 @@ public record TaskCreateResponseDto(String id, String title, String description,
                 entity.getDescription(),
                 entity.getStatus(),
                 entity.getAuthor(),
-                entity.getAssignee()
+                entity.getAssignee(),
+                entity.getComment()
         );
     }
 }
