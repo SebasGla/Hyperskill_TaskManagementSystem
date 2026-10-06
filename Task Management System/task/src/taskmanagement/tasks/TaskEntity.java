@@ -2,8 +2,7 @@ package taskmanagement.tasks;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import org.springframework.data.annotation.CreatedDate;
+
 import taskmanagement.comment.CommentEntity;
 
 import java.time.Instant;
@@ -32,7 +31,7 @@ public class TaskEntity {
     private String assignee;
 
     @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<CommentEntity> comment;
+    private List<CommentEntity> comments;
 
     public TaskEntity() {
     }
@@ -91,5 +90,24 @@ public class TaskEntity {
 
     public void setAuthor(String author) {
         this.author = author;
+    }
+
+    public List<CommentEntity> getComments() {
+        return comments;
+    }
+
+    public void setComments(List<CommentEntity> comments) {
+        this.comments = comments;
+    }
+
+    // Best Practice: Helper-Methoden halten beide Seiten synchron
+    public void addComment(CommentEntity comment) {
+        this.comments.add(comment);
+        comment.setTask(this);
+    }
+
+    public void removeComment(CommentEntity comment) {
+        this.comments.remove(comment);
+        comment.setTask(null);
     }
 }

@@ -6,6 +6,7 @@ import org.springframework.security.core.Authentication;
 
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import taskmanagement.comment.CommentService;
 import taskmanagement.dto.*;
 import taskmanagement.tasks.TaskService;
 
@@ -17,9 +18,11 @@ import java.util.List;
 public class TaskController {
 
     private final TaskService taskService;
+    private final CommentService commentService;
 
-    public TaskController(TaskService taskService){
+    public TaskController(TaskService taskService, CommentService commentService){
         this.taskService = taskService;
+        this.commentService = commentService;
     }
 
     @GetMapping
@@ -66,11 +69,14 @@ public class TaskController {
 
     @PostMapping("{taskId}/comments")
     ResponseEntity<Void> postComment(@Valid @RequestBody CommentDto commentDto, @PathVariable String taskId ,Authentication authentication){
-
+        return commentService.addComment(taskId, authentication.getName(), commentDto);
     }
 
     @GetMapping("{taskId}/comments")
-    Re
+    ResponseEntity<List<CommentResponseDto>> getAllComments(@PathVariable String taskId){
+
+
+    }
 
 
 

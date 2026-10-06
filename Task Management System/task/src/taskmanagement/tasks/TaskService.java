@@ -84,10 +84,4 @@ public class TaskService {
 
        return TaskCreateResponseDto.from(task);
     }
-
-    public void postComment(String username, String uuid, CommentDto dto){
-
-
-    }
-
 }

@@ -3,7 +3,8 @@ package taskmanagement.comment;
 import jakarta.persistence.*;
 import taskmanagement.tasks.TaskEntity;
 
-import java.util.UUID;
+import java.time.Instant;
+
 
 @Entity
 public class CommentEntity {
@@ -19,6 +20,9 @@ public class CommentEntity {
     private String text;
 
     private String author;
+
+    @Column(nullable = false, updatable = false)
+    private Instant createdAt = Instant.now();
 
     public CommentEntity(){
     }
@@ -53,5 +57,13 @@ public class CommentEntity {
 
     public void setAuthor(String author) {
         this.author = author;
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
     }
 }

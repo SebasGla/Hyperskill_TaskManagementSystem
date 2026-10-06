@@ -3,9 +3,12 @@ package taskmanagement.comment;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import taskmanagement.dto.CommentDto;
+import taskmanagement.dto.CommentResponseDto;
 import taskmanagement.exception.TaskNotFoundException;
 import taskmanagement.tasks.TaskEntity;
 import taskmanagement.tasks.TaskRepository;
+
+import java.util.List;
 
 @Service
 public class CommentService {
@@ -17,10 +20,23 @@ public class CommentService {
         this.taskRepository = taskRepository;
     }
 
-    ResponseEntity<Void> addComment(String taskId, CommentDto dto){
+    public ResponseEntity<Void> addComment(String taskId, String user, CommentDto dto){
         TaskEntity task = taskRepository.findById(taskId).orElseThrow(() -> new TaskNotFoundException("No such Task"));
         CommentEntity comment = new CommentEntity();
+        comment.setTask(task);
+        comment.setAuthor(user.toLowerCase());
+        comment.setText(dto.text());
+        commentRepository.save(comment);
 
+        return ResponseEntity.ok().build();
+    }
 
+    public List<CommentResponseDto> getTaskCommentList(String taskId){
+       if(taskRepository.existsById(taskId)){
+           List<CommentResponseDto> commentList =commentRepository.findAllByTaskId(taskId).stream().map(CommentResponseDto::from);
+       }
+       else {
+           throw new TaskNotFoundException("No such Task");
+       }
     }
 }
