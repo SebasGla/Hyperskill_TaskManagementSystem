@@ -32,11 +32,15 @@ public class CommentService {
     }
 
     public List<CommentResponseDto> getTaskCommentList(String taskId){
-       if(taskRepository.existsById(taskId)){
-           List<CommentResponseDto> commentList =commentRepository.findAllByTaskId(taskId).stream().map(CommentResponseDto::from);
+        List<CommentResponseDto> commentList;
+        if(taskRepository.existsById(taskId)){
+           commentList = commentRepository.findAllByTaskId(taskId).stream().map(CommentResponseDto::from).toList();
        }
        else {
            throw new TaskNotFoundException("No such Task");
        }
+
+       return commentList;
+
     }
 }

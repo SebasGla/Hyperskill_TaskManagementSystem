@@ -74,8 +74,7 @@ public class TaskController {
 
     @GetMapping("{taskId}/comments")
     ResponseEntity<List<CommentResponseDto>> getAllComments(@PathVariable String taskId){
-
-
+        return ResponseEntity.ok(commentService.getTaskCommentList(taskId));
     }
 
 

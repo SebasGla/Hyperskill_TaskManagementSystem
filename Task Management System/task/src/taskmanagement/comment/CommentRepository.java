@@ -12,5 +12,6 @@ public interface CommentRepository extends CrudRepository<CommentEntity, Long> {
 
     @Query("SELECT c FROM CommentEntity c WHERE c.task.id = :taskId ORDER BY c.createdAt ASC")
     List<CommentEntity> findAllByTaskId(@Param("taskId") String taskId);
+    long countByTask_Id(String taskId);
 }
 

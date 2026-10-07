@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 import taskmanagement.comment.CommentEntity;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -31,7 +32,7 @@ public class TaskEntity {
     private String assignee;
 
     @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<CommentEntity> comments;
+    private List<CommentEntity> comments = new ArrayList<>();
 
     public TaskEntity() {
     }
