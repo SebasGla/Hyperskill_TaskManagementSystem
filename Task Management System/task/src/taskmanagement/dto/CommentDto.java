@@ -1,6 +1,7 @@
 package taskmanagement.dto;
 
-import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotBlank;
 
-public record CommentDto(@NotEmpty String text) {
+
+public record CommentDto(@NotBlank String text) {
 }

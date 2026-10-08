@@ -26,7 +26,7 @@ public class TaskController {
     }
 
     @GetMapping
-    ResponseEntity<List<TaskCreateResponseDto>> getTasks(@RequestParam(name = "author", required = false) String author,
+    ResponseEntity<List<TaskListDto>> getTasks(@RequestParam(name = "author", required = false) String author,
     @RequestParam(name = "assignee", required = false) String assignee){
         //only author parameter available
         if(author != null && assignee == null){

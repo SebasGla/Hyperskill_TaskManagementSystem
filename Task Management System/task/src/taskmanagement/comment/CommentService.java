@@ -12,8 +12,8 @@ import java.util.List;
 
 @Service
 public class CommentService {
-    private TaskRepository taskRepository;
-    private CommentRepository commentRepository;
+    private final TaskRepository taskRepository;
+    private final CommentRepository commentRepository;
 
     public CommentService(TaskRepository taskRepository, CommentRepository commentRepository){
         this.commentRepository = commentRepository;
@@ -41,6 +41,9 @@ public class CommentService {
        }
 
        return commentList;
+    }
 
+    public int amountComments(String taskId){
+        return  this.commentRepository.countByTask_Id(taskId);
     }
 }

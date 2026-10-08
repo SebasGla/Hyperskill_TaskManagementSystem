@@ -3,6 +3,7 @@ package taskmanagement.tasks;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 
+import org.hibernate.annotations.Formula;
 import taskmanagement.comment.CommentEntity;
 
 import java.time.Instant;
@@ -33,6 +34,10 @@ public class TaskEntity {
 
     @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CommentEntity> comments = new ArrayList<>();
+
+    @Formula("(SELECT count(*) FROM comments c WHERE c.task_id = id)")
+    private int total_Comments;
+
 
     public TaskEntity() {
     }
@@ -110,5 +115,13 @@ public class TaskEntity {
     public void removeComment(CommentEntity comment) {
         this.comments.remove(comment);
         comment.setTask(null);
+    }
+
+    public int getTotalComments() {
+        return total_Comments;
+    }
+
+    public void setTotalComments(int totalComments) {
+        this.total_Comments = totalComments;
     }
 }

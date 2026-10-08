@@ -1,6 +1,7 @@
 package taskmanagement.tasks;
 
 
+
 import org.springframework.stereotype.Service;
 import taskmanagement.dto.*;
 import taskmanagement.exception.AssigneeNotFoundException;
@@ -10,7 +11,7 @@ import taskmanagement.user.UserRepository;
 
 import java.util.List;
 
-import java.util.UUID;
+
 
 @Service
 public class TaskService {
@@ -56,20 +57,20 @@ public class TaskService {
         return TaskCreateResponseDto.from(task);
     }
 
-    public List<TaskCreateResponseDto> getAllTasks(){
-        return taskRepository.findByOrderByCreatedAtDesc().stream().map(TaskCreateResponseDto::from).toList();
+    public List<TaskListDto> getAllTasks(){
+        return taskRepository.findByOrderByCreatedAtDesc().stream().map(TaskListDto::from).toList();
     }
 
-    public List<TaskCreateResponseDto> getUserTasks(String username){
-        return taskRepository.findAllByAuthorOrderByCreatedAtDesc(username.toLowerCase()).stream().map(TaskCreateResponseDto::from).toList();
+    public List<TaskListDto> getUserTasks(String username){
+        return taskRepository.findAllByAuthorOrderByCreatedAtDesc(username.toLowerCase()).stream().map(TaskListDto::from).toList();
     }
 
-    public List<TaskCreateResponseDto> getAssigneeTasks(String assignee){
-        return taskRepository.findAllByAssigneeOrderByCreatedAtDesc(assignee.toLowerCase()).stream().map(TaskCreateResponseDto::from).toList();
+    public List<TaskListDto> getAssigneeTasks(String assignee){
+        return taskRepository.findAllByAssigneeOrderByCreatedAtDesc(assignee.toLowerCase()).stream().map(TaskListDto::from).toList();
     }
 
-    public List<TaskCreateResponseDto> getByAssigneeAndByAuthor(String assignee, String username){
-        return taskRepository.findAllByAssigneeAndAuthorOrderByCreatedAtDesc(assignee.toLowerCase(), username.toLowerCase()).stream().map(TaskCreateResponseDto::from).toList();
+    public List<TaskListDto> getByAssigneeAndByAuthor(String assignee, String username){
+        return taskRepository.findAllByAssigneeAndAuthorOrderByCreatedAtDesc(assignee.toLowerCase(), username.toLowerCase()).stream().map(TaskListDto::from).toList();
     }
 
     public TaskCreateResponseDto updateTaskStatus(String username, String uuid, StatusDto status){

@@ -4,14 +4,16 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import taskmanagement.tasks.TaskEntity;
 
 import java.util.List;
 
 @Repository
 public interface CommentRepository extends CrudRepository<CommentEntity, Long> {
 
-    @Query("SELECT c FROM CommentEntity c WHERE c.task.id = :taskId ORDER BY c.createdAt ASC")
+    @Query("SELECT c FROM CommentEntity c WHERE c.task.id = :taskId ORDER BY c.createdAt DESC")
     List<CommentEntity> findAllByTaskId(@Param("taskId") String taskId);
-    long countByTask_Id(String taskId);
+    int countByTask_Id(String taskId);
+
 }
 
